@@ -8,7 +8,7 @@ public class ChessPosition {
 	public int row;
 	
 	public ChessPosition(char column, int row) {
-		if (row>8 && row<1 && column>'h' && column<'a')
+		if (row>8 || row<1 || column>'h' || column<'a')
 			throw new ChessException("Position out of bounds.");
 		this.column = column;
 		this.row = row;

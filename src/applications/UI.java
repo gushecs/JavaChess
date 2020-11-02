@@ -3,6 +3,7 @@ package applications;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
+import chess.ChessException;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import chess.Color;
@@ -29,6 +30,12 @@ public class UI {
 	public static final String ANSI_PURPLE_BACKGROUND = "\u001B[45m";
 	public static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
 	public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
+
+	// https://stackoverflow.com/questions/2979383/java-clear-the-console
+	public static void clearScreen() {
+		System.out.print("\033[H\033[2J");
+		System.out.flush();
+	}
 
 	public static void printBoard(ChessPiece[][] pieces) {
 		for (int i = 0; i < pieces.length; i++) {
@@ -59,7 +66,7 @@ public class UI {
 
 			String s = sc.nextLine();
 			char column = s.charAt(0);
-			column=convertUpperLower(column);
+			column = convertUpperLower(column);
 			int row = Integer.parseInt(s.substring(1));
 			return new ChessPosition(column, row);
 		} catch (RuntimeException exc) {
@@ -68,23 +75,23 @@ public class UI {
 	}
 
 	private static char convertUpperLower(char column) {
-			if (column == 'A')
-				return 'a';
-			else if (column == 'B')
-				return 'b';
-			else if (column == 'C')
-				return 'c';
-			else if (column == 'D')
-				return 'd';
-			else if (column == 'E')
-				return 'e';
-			else if (column == 'F')
-				return 'f';
-			else if (column == 'G')
-				return 'g';
-			else if (column == 'H')
-				return 'h';
-			else
-				return column;
+		if (column == 'A')
+			return 'a';
+		else if (column == 'B')
+			return 'b';
+		else if (column == 'C')
+			return 'c';
+		else if (column == 'D')
+			return 'd';
+		else if (column == 'E')
+			return 'e';
+		else if (column == 'F')
+			return 'f';
+		else if (column == 'G')
+			return 'g';
+		else if (column == 'H')
+			return 'h';
+		else
+			return column;
 	}
 }
