@@ -2,13 +2,17 @@ package chess.pieces;
 
 import boardGame.Board;
 import boardGame.Position;
+import chess.ChessMatch;
 import chess.ChessPiece;
 import chess.Color;
 
 public class Pawn extends ChessPiece {
 
-	public Pawn(Board board, Color color) {
+	private ChessMatch chessMatch;
+
+	public Pawn(Board board, Color color, ChessMatch chessMatch) {
 		super(board, color);
+		this.chessMatch = chessMatch;
 	}
 
 	@Override
@@ -46,6 +50,24 @@ public class Pawn extends ChessPiece {
 		p.setValues(position.getRow() + i, position.getColumn() + 1);
 		if (getBoard().positionExists(p) && isThereOpponentPiece(p))
 			mat[p.getRow()][p.getColumn()] = true;
+
+		// en passant
+		if ((getColor() == Color.WHITE && position.getRow() == 3)
+				|| (getColor() == Color.BLACK && position.getRow() == 4)) {
+			p.setValues(position.getRow(), position.getColumn());
+			Position p1 = new Position(position.getRow(), position.getColumn() - 1);
+			Position p2 = new Position(position.getRow(), position.getColumn() + 1);
+			if (getBoard().positionExists(p1) && isThereOpponentPiece(p1)) {
+				ChessPiece enPassantPieceLeft = (ChessPiece) getBoard().piece(p1);
+				if (enPassantPieceLeft == chessMatch.getEnPassantVulnerable())
+					mat[p1.getRow() + i][p1.getColumn()] = true;
+			}
+			if (getBoard().positionExists(p2) && isThereOpponentPiece(p2)) {
+				ChessPiece enPassantPieceRight = (ChessPiece) getBoard().piece(p2);
+				if (enPassantPieceRight == chessMatch.getEnPassantVulnerable())
+					mat[p2.getRow() + i][p2.getColumn()] = true;
+			}
+		}
 
 		return mat;
 	}
