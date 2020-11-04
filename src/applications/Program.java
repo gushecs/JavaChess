@@ -21,29 +21,38 @@ public class Program {
 		while (!chessMatch.getCheckMate()) {
 			try {
 				UI.clearScreen();
-				UI.printMatch(chessMatch,captured);
+				UI.printMatch(chessMatch, captured);
 				System.out.println();
 				System.out.print("Source: ");
 				ChessPosition source = UI.readChessPosition(sc);
-				
+
 				boolean[][] possibleMoves = chessMatch.possibleMoves(source);
 				UI.clearScreen();
-				UI.printBoard(chessMatch.getPieces(),possibleMoves);
-				
+				ChessPiece[][] piecesOnTheBoard = chessMatch.getPieces();
+				UI.printBoard(piecesOnTheBoard, possibleMoves);
+
 				System.out.println();
 				System.out.print("Target: ");
 				ChessPosition target = UI.readChessPosition(sc);
 				ChessPiece capturedPiece = chessMatch.performChessMove(source, target);
-				
-				if (capturedPiece!=null)
+
+				if (capturedPiece != null)
 					captured.add(capturedPiece);
-				
-				if (chessMatch.getPromoted()!=null) {
-					System.out.print("Enter piece for promotion (B/k/R/Q) ");
-					String type = sc.nextLine();
-					chessMatch.replacePromotedPiece(type);
+
+				while (chessMatch.getPromoted() != null) {
+					try {
+						System.out.println();
+						System.out.print("Enter piece for promotion (B/k/R/Q) ");
+						String type = sc.nextLine();
+						chessMatch.replacePromotedPiece(type);
+					} catch (RuntimeException e) {
+						System.out.println(e.getMessage());
+						sc.nextLine();
+						UI.clearScreen();
+						UI.printBoard(piecesOnTheBoard, possibleMoves);
+					}
 				}
-				
+
 			} catch (ChessException e) {
 				System.out.println(e.getMessage());
 				sc.nextLine();
@@ -53,8 +62,8 @@ public class Program {
 			}
 		}
 		UI.clearScreen();
-		UI.printMatch(chessMatch,captured);
+		UI.printMatch(chessMatch, captured);
 
-	}	
+	}
 
 }
