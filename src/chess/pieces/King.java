@@ -2,13 +2,22 @@ package chess.pieces;
 
 import boardGame.Board;
 import boardGame.Position;
+import chess.ChessMatch;
 import chess.ChessPiece;
 import chess.Color;
 
 public class King extends ChessPiece {
 
-	public King(Board board, Color color) {
+	private ChessMatch chessMatch;
+
+	public King(Board board, Color color, ChessMatch chessMatch) {
 		super(board, color);
+		this.chessMatch = chessMatch;
+	}
+
+	private boolean testRookCastling(Position position) {
+		ChessPiece p = (ChessPiece) getBoard().piece(position);
+		return p != null && p instanceof Rook && p.getColor() == getColor() && p.getMoveCount() == 0;
 	}
 
 	private boolean canMove(Position position) {
@@ -28,43 +37,65 @@ public class King extends ChessPiece {
 
 		// above
 		p.setValues(position.getRow() - 1, position.getColumn());
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
 
 		// left
 		p.setValues(position.getRow(), position.getColumn() - 1);
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
 
 		// down
 		p.setValues(position.getRow() + 1, position.getColumn());
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
 
 		// right
 		p.setValues(position.getRow(), position.getColumn() + 1);
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
 
 		// above-left
 		p.setValues(position.getRow() - 1, position.getColumn() - 1);
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
 
 		// down-left
 		p.setValues(position.getRow() + 1, position.getColumn() - 1);
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
 
 		// down-right
 		p.setValues(position.getRow() + 1, position.getColumn() + 1);
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
 
 		// above-right
 		p.setValues(position.getRow() - 1, position.getColumn() + 1);
-		if (getBoard().positionExists(p)&&canMove(p))
+		if (getBoard().positionExists(p) && canMove(p))
 			mat[p.getRow()][p.getColumn()] = true;
+
+		//rook castling
+		p.setValues(position.getRow(), position.getColumn());
+		if (getMoveCount()==0&&!chessMatch.getCheck()) {
+			Position R1=new Position(position.getRow(), position.getColumn()+3);
+			if (testRookCastling(R1)) {
+				Position p1=new Position(position.getRow(), position.getColumn()+1);
+				Position p2=new Position(position.getRow(), position.getColumn()+2);
+				if (!getBoard().thereIsAPiece(p1)&&!getBoard().thereIsAPiece(p2)) {
+					mat[p.getRow()][p.getColumn()+2] = true;
+				}
+			}
+			Position R2=new Position(position.getRow(), position.getColumn()-4);
+			if (testRookCastling(R2)) {
+				Position p1=new Position(position.getRow(), position.getColumn()-1);
+				Position p2=new Position(position.getRow(), position.getColumn()-2);
+				Position p3=new Position(position.getRow(), position.getColumn()-3);
+				if (!getBoard().thereIsAPiece(p1)&&!getBoard().thereIsAPiece(p2)&&!getBoard().thereIsAPiece(p3)) {
+					mat[p.getRow()][p.getColumn()-2] = true;
+				}
+			}
+		}
 
 		return mat;
 	}
