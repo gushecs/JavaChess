@@ -25,6 +25,7 @@ public class ChessMatch {
 	private boolean checkMate;
 	private ChessPiece enPassantVulnerable;
 	private ChessPiece promoted;
+	private ChessPiece movingPiece;
 
 	public int getTurn() {
 		return turn;
@@ -48,6 +49,10 @@ public class ChessMatch {
 
 	public ChessPiece getPromoted() {
 		return promoted;
+	}
+	
+	public ChessPiece getMovingPiece() {
+		return movingPiece;
 	}
 
 	public ChessMatch() {
@@ -155,6 +160,7 @@ public class ChessMatch {
 	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
 		Position position = sourcePosition.toPosition();
 		validateSourcePosition(position);
+		movingPiece=(ChessPiece)board.piece(position);
 		return board.piece(position).possibleMoves();
 	}
 

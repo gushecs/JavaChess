@@ -29,7 +29,7 @@ public class Program {
 				boolean[][] possibleMoves = chessMatch.possibleMoves(source);
 				UI.clearScreen();
 				ChessPiece[][] piecesOnTheBoard = chessMatch.getPieces();
-				UI.printBoard(piecesOnTheBoard, possibleMoves);
+				UI.printBoard(piecesOnTheBoard, possibleMoves,chessMatch);
 
 				System.out.println();
 				System.out.print("Target: ");
@@ -49,7 +49,7 @@ public class Program {
 						System.out.println(e.getMessage());
 						sc.nextLine();
 						UI.clearScreen();
-						UI.printBoard(piecesOnTheBoard, possibleMoves);
+						UI.printBoard(piecesOnTheBoard, possibleMoves,chessMatch);
 					}
 				}
 
