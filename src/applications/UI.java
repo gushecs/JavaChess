@@ -45,40 +45,53 @@ public class UI {
 		System.out.flush();
 	}
 
-	public static void printMatch(ChessMatch chessMatch, List<ChessPiece> captured) {
-		printBoard(chessMatch.getPieces(), chessMatch);
+	public static void printMatch(ChessMatch chessMatch, List<ChessPiece> captured, Language language) {
+		printBoard(chessMatch.getPieces(), chessMatch,language);
 		System.out.println();
-		printCapturedPieces(captured);
+		printCapturedPieces(captured,language);
 		System.out.println();
-		System.out.println("Turn: " + chessMatch.getTurn());
-		if (!chessMatch.getCheckMate()) {
-			System.out.println("Waiting " + chessMatch.getCurrentPlayer() + " player.");
-			if (chessMatch.getCheck())
-				System.out.println("CHECK!");
+		if (!language.getPortuguese()) {
+			System.out.println("Turn: " + chessMatch.getTurn());
+			if (!chessMatch.getCheckMate()) {
+				System.out.println("Waiting " + language.translatePlayer(chessMatch.getCurrentPlayer()) + " player.");
+				if (chessMatch.getCheck())
+					System.out.println("CHECK!");
+			} else {
+				System.out.println("CHECKMATE!");
+				System.out.println("Winner: " + language.translatePlayer(chessMatch.getCurrentPlayer()));
+			}
 		} else {
-			System.out.println("CHECKMATE!");
-			System.out.println("Winner: " + chessMatch.getCurrentPlayer());
+			System.out.println("Turno: " + chessMatch.getTurn());
+			if (!chessMatch.getCheckMate()) {
+				System.out.println("Esperando o jogador " + language.translatePlayer(chessMatch.getCurrentPlayer()) + ".");
+				if (chessMatch.getCheck())
+					System.out.println("XEQUE!");
+			} else {
+				System.out.println("XEQUE-MATE!");
+				System.out.println("Vencedor: " + language.translatePlayer(chessMatch.getCurrentPlayer()));
+			}
 		}
 	}
 
-	public static void printBoard(ChessPiece[][] pieces, ChessMatch chessMatch) {
+	public static void printBoard(ChessPiece[][] pieces, ChessMatch chessMatch,Language language) {
 		for (int i = 0; i < pieces.length; i++) {
 			System.out.print(8 - i + " ");
 			for (int j = 0; j < pieces.length; j++) {
-				printPiece(pieces[i][j], false, chessMatch, i, j);
+				printPiece(pieces[i][j], false, chessMatch, i, j,language);
 			}
 			System.out.println();
 		}
 		System.out.println("  A B C D E F G H");
 	}
 
-	public static void printBoard(ChessPiece[][] pieces, boolean[][] possibleMoves, ChessMatch chessMatch) {
+	public static void printBoard(ChessPiece[][] pieces, boolean[][] possibleMoves, ChessMatch chessMatch,
+			Language language) {
 		castling = false;
 		enPassant = false;
 		for (int i = 0; i < pieces.length; i++) {
 			System.out.print(8 - i + " ");
 			for (int j = 0; j < pieces.length; j++) {
-				printPiece(pieces[i][j], possibleMoves[i][j], chessMatch, i, j);
+				printPiece(pieces[i][j], possibleMoves[i][j], chessMatch, i, j,language);
 			}
 			System.out.println();
 		}
@@ -89,15 +102,18 @@ public class UI {
 		}
 		if (castling) {
 			System.out.println();
-			System.out.println(ANSI_GREEN_BACKGROUND + " " + ANSI_RESET + ANSI_GREEN + " Castling." + ANSI_RESET);
+			if (!language.getPortuguese())
+				System.out.println(ANSI_GREEN_BACKGROUND + " " + ANSI_RESET + ANSI_GREEN + " Castling." + ANSI_RESET);
+			else
+				System.out.println(ANSI_GREEN_BACKGROUND + " " + ANSI_RESET + ANSI_GREEN + " Roque." + ANSI_RESET);
 		}
 	}
 
-	private static void printPiece(ChessPiece piece, boolean background, ChessMatch chessMatch, int i, int j) {
+	private static void printPiece(ChessPiece piece, boolean background, ChessMatch chessMatch, int i, int j,Language language) {
 		if (background) {
 			ChessPiece movingPiece = chessMatch.getMovingPiece();
-			int row = movingPiece.getChessPosition().toPosition().getRow();
-			int column = movingPiece.getChessPosition().toPosition().getColumn();
+			int row = chessMatch.getMovingPieceRow();
+			int column = chessMatch.getMovingPieceColumn();
 			if (movingPiece instanceof Pawn && (i == row + 1 || i == row - 1) && (j == column + 1 || j == column - 1)
 					&& piece == null) {
 				// print en passant
@@ -116,15 +132,15 @@ public class UI {
 			System.out.print("-" + ANSI_RESET);
 		} else {
 			if (piece.getColor() == Color.WHITE) {
-				System.out.print(ANSI_WHITE + piece + ANSI_RESET);
+				System.out.print(ANSI_WHITE + language.piecePtEn(piece) + ANSI_RESET);
 			} else {
-				System.out.print(ANSI_YELLOW + piece + ANSI_RESET);
+				System.out.print(ANSI_YELLOW + language.piecePtEn(piece) + ANSI_RESET);
 			}
 		}
 		System.out.print(" ");
 	}
 
-	public static ChessPosition readChessPosition(Scanner sc) {
+	public static ChessPosition readChessPosition(Scanner sc, Language language) {
 		try {
 
 			String s = sc.nextLine();
@@ -133,7 +149,7 @@ public class UI {
 			int row = Integer.parseInt(s.substring(1));
 			return new ChessPosition(column, row);
 		} catch (RuntimeException exc) {
-			throw new InputMismatchException("Error reading position, valid values go from a1 to h8.");
+			throw new InputMismatchException(language.readChessPositionError());
 		}
 	}
 
@@ -158,19 +174,27 @@ public class UI {
 			return column;
 	}
 
-	private static void printCapturedPieces(List<ChessPiece> captured) {
+	private static void printCapturedPieces(List<ChessPiece> captured, Language language) {
 		List<ChessPiece> white = captured.stream().filter(x -> x.getColor() == Color.WHITE)
 				.collect(Collectors.toList());
 		List<ChessPiece> black = captured.stream().filter(x -> x.getColor() == Color.BLACK)
 				.collect(Collectors.toList());
-		System.out.println("Captured pieces:");
-		System.out.print("White: ");
+		if (!language.getPortuguese()) {
+			System.out.println("Captured pieces:");
+			System.out.print("White: ");
+		} else {
+			System.out.println("Capturados:");
+			System.out.print("Brancos: ");
+		}
 		System.out.print(ANSI_WHITE);
-		System.out.println(Arrays.toString(white.toArray()));
+		System.out.println(language.pieceArrayPtEn(Arrays.toString(white.toArray())));
 		System.out.print(ANSI_RESET);
-		System.out.print("Black: ");
+		if (!language.getPortuguese())
+			System.out.print("Black: ");
+		else
+			System.out.print("Pretos: ");
 		System.out.print(ANSI_YELLOW);
-		System.out.println(Arrays.toString(black.toArray()));
+		System.out.println(language.pieceArrayPtEn(Arrays.toString(black.toArray())));
 		System.out.print(ANSI_RESET);
 	}
 }

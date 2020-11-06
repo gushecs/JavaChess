@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import applications.Language;
 import boardGame.Board;
 import boardGame.Piece;
 import boardGame.Position;
@@ -26,6 +27,8 @@ public class ChessMatch {
 	private ChessPiece enPassantVulnerable;
 	private ChessPiece promoted;
 	private ChessPiece movingPiece;
+	private int movingPieceRow;
+	private int movingPieceColumn;
 
 	public int getTurn() {
 		return turn;
@@ -53,6 +56,14 @@ public class ChessMatch {
 	
 	public ChessPiece getMovingPiece() {
 		return movingPiece;
+	}
+
+	public int getMovingPieceRow() {
+		return movingPieceRow;
+	}
+	
+	public int getMovingPieceColumn() {
+		return movingPieceColumn;
 	}
 
 	public ChessMatch() {
@@ -129,50 +140,68 @@ public class ChessMatch {
 		piecesOnTheBoard.add(piece);
 	}
 
-	public ChessPiece replacePromotedPiece(String type) {
+	public ChessPiece replacePromotedPiece(String type, Language language) {
 		if (promoted == null)
 			throw new IllegalStateException("There's no piece to be promoted.");
 
-		if (!type.equals("B") && !type.equals("R") && !type.equals("k") && !type.equals("Q"))
-			throw new ChessException("Invalid type for promotion.");
+		if (!language.getPortuguese()) {
+			if (!type.equals("B") && !type.equals("R") && !type.equals("k") && !type.equals("Q"))
+				throw new ChessException("Invalid type for promotion.");
+		} else {
+			if (!type.equals("B") && !type.equals("C") && !type.equals("T") && !type.equals("r"))
+				throw new ChessException("Escolha invalida para jogada de promocao.");
+		}
 
 		Position pos = promoted.getChessPosition().toPosition();
 		Piece p = board.removePiece(pos);
 		piecesOnTheBoard.remove(p);
-		ChessPiece newPiece=newPiece(type,promoted.getColor());
+		ChessPiece newPiece = newPiece(type, promoted.getColor(), language);
 		board.placePiece(newPiece, pos);
 		piecesOnTheBoard.add(newPiece);
 		promoted = null;
 		return newPiece;
 	}
 
-	private ChessPiece newPiece(String type, Color color) {
-		if (type.equals("B"))
-			return new Bishop(board, color);
-		if (type.equals("R"))
-			return new Rook(board, color);
-		if (type.equals("k"))
-			return new Knight(board, color);
-		else
-			return new Queen(board, color);
+	private ChessPiece newPiece(String type, Color color, Language language) {
+		if (!language.getPortuguese()) {
+			if (type.equals("B"))
+				return new Bishop(board, color);
+			if (type.equals("R"))
+				return new Rook(board, color);
+			if (type.equals("k"))
+				return new Knight(board, color);
+			else
+				return new Queen(board, color);
+		} else {
+			if (type.equals("B"))
+				return new Bishop(board, color);
+			if (type.equals("T"))
+				return new Rook(board, color);
+			if (type.equals("C"))
+				return new Knight(board, color);
+			else
+				return new Queen(board, color);
+		}
 	}
 
-	public boolean[][] possibleMoves(ChessPosition sourcePosition) {
+	public boolean[][] possibleMoves(ChessPosition sourcePosition,Language language) {
 		Position position = sourcePosition.toPosition();
-		validateSourcePosition(position);
-		movingPiece=(ChessPiece)board.piece(position);
+		validateSourcePosition(position,language);
+		ChessPiece movingPiece = (ChessPiece) board.piece(position);
+		movingPieceRow = movingPiece.getChessPosition().toPosition().getRow();
+		movingPieceColumn = movingPiece.getChessPosition().toPosition().getColumn();
 		return board.piece(position).possibleMoves();
 	}
 
-	public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition) {
+	public ChessPiece performChessMove(ChessPosition sourcePosition, ChessPosition targetPosition, Language language) {
 		Position source = sourcePosition.toPosition();
 		Position target = targetPosition.toPosition();
-		validateSourcePosition(source);
-		validateTargetPosition(source, target);
+		validateSourcePosition(source,language);
+		validateTargetPosition(source, target,language);
 		Piece capturedPiece = makeMove(source, target);
 		if (testCheck(currentPlayer)) {
 			undoMove(source, target, capturedPiece);
-			throw new ChessException("You can't put yourself in check.");
+			throw new ChessException(language.checkException());
 		}
 
 		ChessPiece movedPiece = (ChessPiece) board.piece(target);
@@ -181,7 +210,10 @@ public class ChessMatch {
 			if ((movedPiece.getColor() == Color.WHITE && target.getRow() == 0)
 					|| (movedPiece.getColor() == Color.BLACK && target.getRow() == 7)) {
 				promoted = (ChessPiece) board.piece(target);
-				promoted = replacePromotedPiece("Q");
+				if (!language.getPortuguese())
+					promoted = replacePromotedPiece("Q", language);
+				else
+					promoted = replacePromotedPiece("r", language);
 			}
 		}
 
@@ -202,18 +234,18 @@ public class ChessMatch {
 		return (ChessPiece) capturedPiece;
 	}
 
-	private void validateSourcePosition(Position position) {
+	private void validateSourcePosition(Position position,Language language) {
 		if (!board.thereIsAPiece(position))
-			throw new ChessException("There's a piece in the selected position.");
+			throw new ChessException(language.pieceInPosition());
 		if (!board.piece(position).isThereAnyPossibleMove())
-			throw new ChessException("There's no possible movements for the selected piece.");
+			throw new ChessException(language.noPossibleMoves());
 		if (currentPlayer != ((ChessPiece) board.piece(position)).getColor())
-			throw new ChessException("The piece don't belong to the current player.");
+			throw new ChessException(language.pieceDontBelong());
 	}
 
-	private void validateTargetPosition(Position source, Position target) {
+	private void validateTargetPosition(Position source, Position target,Language language) {
 		if (!board.piece(source).possibleMove(target))
-			throw new ChessException("Selected position is invalid for the choosen piece.");
+			throw new ChessException(language.invalidPosition());
 	}
 
 	private Piece makeMove(Position source, Position target) {

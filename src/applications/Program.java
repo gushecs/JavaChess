@@ -18,23 +18,32 @@ public class Program {
 		List<ChessPiece> captured = new ArrayList<>();
 		Scanner sc = new Scanner(System.in);
 
+		Language language = new Language();
+		language.setLanguage(sc);
+
 		while (!chessMatch.getCheckMate()) {
 			try {
 				UI.clearScreen();
-				UI.printMatch(chessMatch, captured);
+				UI.printMatch(chessMatch, captured, language);
 				System.out.println();
-				System.out.print("Source: ");
-				ChessPosition source = UI.readChessPosition(sc);
+				if (!language.getPortuguese())
+					System.out.print("Source: ");
+				else
+					System.out.print("Da casa: ");
+				ChessPosition source = UI.readChessPosition(sc, language);
 
-				boolean[][] possibleMoves = chessMatch.possibleMoves(source);
+				boolean[][] possibleMoves = chessMatch.possibleMoves(source, language);
 				UI.clearScreen();
 				ChessPiece[][] piecesOnTheBoard = chessMatch.getPieces();
-				UI.printBoard(piecesOnTheBoard, possibleMoves,chessMatch);
+				UI.printBoard(piecesOnTheBoard, possibleMoves, chessMatch, language);
 
 				System.out.println();
-				System.out.print("Target: ");
-				ChessPosition target = UI.readChessPosition(sc);
-				ChessPiece capturedPiece = chessMatch.performChessMove(source, target);
+				if (!language.getPortuguese())
+					System.out.print("Target: ");
+				else
+					System.out.print("Para a casa: ");
+				ChessPosition target = UI.readChessPosition(sc, language);
+				ChessPiece capturedPiece = chessMatch.performChessMove(source, target, language);
 
 				if (capturedPiece != null)
 					captured.add(capturedPiece);
@@ -42,14 +51,17 @@ public class Program {
 				while (chessMatch.getPromoted() != null) {
 					try {
 						System.out.println();
-						System.out.print("Enter piece for promotion (B/k/R/Q) ");
+						if (!language.getPortuguese())
+							System.out.print("Enter piece for promotion (B/k/R/Q) ");
+						else
+							System.out.print("Escolha a peca para promocao (B/C/T/r) ");
 						String type = sc.nextLine();
-						chessMatch.replacePromotedPiece(type);
+						chessMatch.replacePromotedPiece(type, language);
 					} catch (RuntimeException e) {
 						System.out.println(e.getMessage());
 						sc.nextLine();
 						UI.clearScreen();
-						UI.printBoard(piecesOnTheBoard, possibleMoves,chessMatch);
+						UI.printBoard(piecesOnTheBoard, possibleMoves, chessMatch, language);
 					}
 				}
 
@@ -62,7 +74,7 @@ public class Program {
 			}
 		}
 		UI.clearScreen();
-		UI.printMatch(chessMatch, captured);
+		UI.printMatch(chessMatch, captured, language);
 
 	}
 
