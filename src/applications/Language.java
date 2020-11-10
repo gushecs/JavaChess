@@ -39,7 +39,6 @@ public class Language {
 		while (loop) {
 			UI.clearScreen();
 			System.out.println();
-			System.out.println();
 			System.out.println("     Digite (P) para jogar em " + ANSI_GREEN_BACKGROUND + " " + ANSI_YELLOW_BACKGROUND
 					+ " " + ANSI_BLUE_BACKGROUND + " " + ANSI_RESET + " Pt-Br " + ANSI_BLUE_BACKGROUND + " "
 					+ ANSI_YELLOW_BACKGROUND + " " + ANSI_GREEN_BACKGROUND + " " + ANSI_RESET);
