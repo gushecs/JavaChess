@@ -13,6 +13,7 @@ public abstract class GenericCheckersPiece extends Piece{
 	protected boolean killingSpree;
 	protected int spreeSize;
 	protected List<Position[]> spreePositions = new ArrayList<>();
+	protected List<boolean[][]> killedPieces = new ArrayList<>();
 
 	public boolean getKillingSpree() {
 		return killingSpree;

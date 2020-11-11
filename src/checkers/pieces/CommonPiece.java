@@ -14,7 +14,8 @@ public class CommonPiece extends GenericCheckersPiece {
 		super(board, color);
 	}
 
-	private void checkKills(Position position, List<boolean[][]> killingSpreeList, List<Position[]> finalPosition) {
+	private void checkKills(Position position, List<boolean[][]> killedPiecesList, List<boolean[][]> killingSpreeList,
+			List<Position[]> finalPosition) {
 
 		Position p1 = new Position(position.getRow() + 1, position.getColumn() + 1);
 		Position p2 = new Position(position.getRow() + 2, position.getColumn() + 2);
@@ -39,26 +40,30 @@ public class CommonPiece extends GenericCheckersPiece {
 					&& !getBoard().thereIsAPiece(p2)) {
 				killingSpree = true;
 				boolean[][] killingSpreeMat = new boolean[getBoard().getRows()][getBoard().getColumns()];
+				boolean[][] killedPieces = new boolean[getBoard().getRows()][getBoard().getColumns()];
 				List<Position> finalPositionArray = new ArrayList<>();
-				killingSpreeMat[p1.getRow()][p1.getColumn()] = true;
+				killedPieces[p1.getRow()][p1.getColumn()] = true;
 				killingSpreeMat[p2.getRow()][p2.getColumn()] = true;
 				finalPositionArray.add(p2);
-				Position origin = position;
-				checkKillingSpree(origin, p2, killingSpreeMat, killingSpreeList, finalPositionArray, finalPosition);
+				checkKillingSpree(killedPieces, killedPiecesList, p2, killingSpreeMat, killingSpreeList,
+						finalPositionArray, finalPosition);
 			}
 		}
 
 	}
 
 	@SuppressWarnings("null")
-	private void checkKillingSpree(Position origin, Position position, boolean[][] killingSpreeMat,
-			List<boolean[][]> killingSpreeList, List<Position> finalPositionArray, List<Position[]> finalPosition) {
+	private void checkKillingSpree(boolean[][] killedPieces, List<boolean[][]> killedPiecesList, Position position,
+			boolean[][] killingSpreeMat, List<boolean[][]> killingSpreeList, List<Position> finalPositionArray,
+			List<Position[]> finalPosition) {
 		Position p1 = new Position(position.getRow() + 1, position.getColumn() + 1);
 		Position p2 = new Position(position.getRow() + 2, position.getColumn() + 2);
 		boolean[][] preservedkillingSpreeMat = killingSpreeMat;
+		boolean[][] preservedkilledPieces = killedPieces;
 		List<Position> preservedfinalPositionArray = finalPositionArray;
 		for (int i = 1; i < 5; i++) {
 			killingSpreeMat = preservedkillingSpreeMat;
+			killedPieces = preservedkilledPieces;
 			finalPositionArray = preservedfinalPositionArray;
 			if (i == 2) {
 				p1.setRow(position.getRow() + 1);
@@ -77,12 +82,12 @@ public class CommonPiece extends GenericCheckersPiece {
 				p2.setColumn(position.getColumn() + 2);
 			}
 			if (getBoard().positionExists(p1) && isThereOpponentPiece(p1) && getBoard().positionExists(p2)
-					&& !getBoard().thereIsAPiece(p2) && p2 != origin) {
+					&& !getBoard().thereIsAPiece(p2) && !killedPieces[p1.getRow()][p1.getColumn()]) {
 				finalPositionArray.add(p2);
-				killingSpreeMat[p1.getRow()][p1.getColumn()] = true;
+				killedPieces[p1.getRow()][p1.getColumn()] = true;
 				killingSpreeMat[p2.getRow()][p2.getColumn()] = true;
-				origin = position;
-				checkKillingSpree(position, p2, killingSpreeMat, killingSpreeList, finalPositionArray, finalPosition);
+				checkKillingSpree(killedPieces, killedPiecesList, p2, killingSpreeMat, killingSpreeList,
+						finalPositionArray, finalPosition);
 			} else {
 				boolean newKillingSpree = false;
 				if (killingSpreeList != null) {
@@ -97,6 +102,7 @@ public class CommonPiece extends GenericCheckersPiece {
 							posArray[j] = finalPositionArray.get(j);
 						}
 						finalPosition.add(posArray);
+						killedPiecesList.add(killedPieces);
 					}
 				} else {
 					killingSpreeList.add(killingSpreeMat);
@@ -105,6 +111,7 @@ public class CommonPiece extends GenericCheckersPiece {
 						posArray[j] = finalPositionArray.get(j);
 					}
 					finalPosition.add(posArray);
+					killedPiecesList.add(killedPieces);
 				}
 			}
 		}
@@ -114,10 +121,11 @@ public class CommonPiece extends GenericCheckersPiece {
 	public boolean[][] possibleMoves() {
 		boolean[][] mat = new boolean[getBoard().getRows()][getBoard().getColumns()];
 		List<boolean[][]> killingSpreeList = new ArrayList<>();
+		List<boolean[][]> killedPiecesList = new ArrayList<>();
 		List<Position[]> finalPosition = new ArrayList<>();
 		killingSpree = false;
 
-		checkKills(position, killingSpreeList, finalPosition);
+		checkKills(position, killedPiecesList, killingSpreeList, finalPosition);
 
 		if (!killingSpree) {
 			int movePattern;
@@ -155,7 +163,12 @@ public class CommonPiece extends GenericCheckersPiece {
 					mat = currentSpree;
 					lastSpreeSize = spreeSize;
 					this.spreeSize = spreeSize;
-					spreePositions = finalPosition;
+					List<Position[]> tempFinalPosition = new ArrayList<>();
+					tempFinalPosition.add(finalPosition.get(i));
+					spreePositions = tempFinalPosition;
+					List<boolean[][]> tempKilledPieces = new ArrayList<>();
+					tempKilledPieces.add(killedPiecesList.get(i));
+					killedPieces = tempKilledPieces;
 				} else if (spreeSize == lastSpreeSize) {
 					for (int j = 0; j < getBoard().getRows(); j++) {
 						for (int k = 0; k < getBoard().getColumns(); k++) {
@@ -164,6 +177,7 @@ public class CommonPiece extends GenericCheckersPiece {
 						}
 					}
 					spreePositions.add(finalPosition.get(i));
+					killedPieces.add(killedPiecesList.get(i));
 				}
 			}
 		}
