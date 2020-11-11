@@ -26,6 +26,10 @@ public abstract class GenericCheckersPiece extends Piece{
 	public List<Position[]> getSpreePositions() {
 		return spreePositions;
 	}
+	
+	public List<boolean[][]> getKilledPieces() {
+		return killedPieces;
+	}
 
 	public GenericCheckersPiece(Board board, Color color) {
 		super(board);
@@ -36,7 +40,7 @@ public abstract class GenericCheckersPiece extends Piece{
 		return color;
 	}
 	
-	public CheckersPosition getChessPosition() {
+	public CheckersPosition getCheckersPosition() {
 		return CheckersPosition.fromPosition(position);
 	}
 	
