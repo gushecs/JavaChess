@@ -1,6 +1,7 @@
-package checkers;
+package boardGame;
 
 public enum Color {
 	BLACK,
 	WHITE;
+
 }

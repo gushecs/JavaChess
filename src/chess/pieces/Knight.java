@@ -1,9 +1,9 @@
 package chess.pieces;
 
 import boardGame.Board;
+import boardGame.Color;
 import boardGame.Position;
 import chess.ChessPiece;
-import chess.Color;
 
 public class Knight extends ChessPiece{
 	

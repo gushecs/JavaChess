@@ -14,7 +14,7 @@ import chess.ChessMatch;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
-public class Program {
+public class Mainp {
 
 	public static void main(String[] args) {
 
@@ -84,7 +84,8 @@ public class Program {
 
 		} else {
 			CheckersMatch checkersMatch = new CheckersMatch();
-			while (!checkersMatch.checkWinner()) {
+			boolean winner = false;
+			while (!winner) {
 				try {
 					UI.clearScreen();
 					UI.printCheckersMatch(checkersMatch, language);
@@ -98,7 +99,6 @@ public class Program {
 						else
 							System.out.print("Numero da jogada: ");
 						int moveNumber = sc.nextInt();
-						sc.nextLine();
 						checkersMatch.performMandatoryMoves(moveNumber, language);
 					} else {
 						if (!language.getPortuguese())
@@ -119,6 +119,9 @@ public class Program {
 					}
 
 					checkersMatch.checkVictory();
+					if (checkersMatch.getWinner() == Color.BLACK || checkersMatch.getWinner() == Color.WHITE)
+						winner = true;
+
 					checkersMatch.promote();
 
 				} catch (CheckersException e) {

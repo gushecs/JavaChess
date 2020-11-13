@@ -2,8 +2,9 @@ package applications;
 
 import java.util.Scanner;
 
+import boardGame.Color;
+import checkers.GenericCheckersPiece;
 import chess.ChessPiece;
-import chess.Color;
 
 public class Language {
 
@@ -107,6 +108,13 @@ public class Language {
 		else
 			return ANSI_RED + "Selected position is invalid for the choosen piece!" + ANSI_RESET;
 	}
+	
+	public String invalidPlay() {
+		if (portuguese)
+			return ANSI_RED + "A jogada que voce tentou fazer nao existe!" + ANSI_RESET;
+		else
+			return ANSI_RED + "User tried to play non existent move!" + ANSI_RESET;
+	}
 
 	public String piecePtEn(ChessPiece piece) {
 		if (!portuguese || piece.toString().equals("B"))
@@ -125,6 +133,13 @@ public class Language {
 		}
 	}
 
+	public String piecePtEn(GenericCheckersPiece piece) {
+		if (portuguese && piece.toString().equals("C"))
+			return "D";
+		else
+			return piece.toString();
+	}
+
 	public String pieceArrayPtEn(String pieces) {
 		String piece;
 		String text = " ";
@@ -132,7 +147,7 @@ public class Language {
 		for (int i = 0; i < pieces.length(); i++) {
 			piece = String.valueOf(pieces.charAt(i));
 			if (!portuguese || piece.equals("B") || piece.equals("P") || piece.equals("[") || piece.equals("]")
-					|| piece.equals(" ")|| piece.equals(","))
+					|| piece.equals(" ") || piece.equals(","))
 				text += String.valueOf(pieces.charAt(i));
 			else {
 				if (piece.equals("R"))

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import boardGame.Board;
+import boardGame.Color;
 import boardGame.Piece;
 import boardGame.Position;
 

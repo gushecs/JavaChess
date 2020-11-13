@@ -4,22 +4,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 import boardGame.Board;
+import boardGame.Color;
 import boardGame.Position;
-import checkers.Color;
 import checkers.GenericCheckersPiece;
 
 public class CommonPiece extends GenericCheckersPiece {
+
+	private List<boolean[][]> killingSpreeList = new ArrayList<>();
+	private List<boolean[][]> killedPiecesList = new ArrayList<>();
+	private List<Position[]> finalPosition = new ArrayList<>();
 
 	public CommonPiece(Board board, Color color) {
 		super(board, color);
 	}
 
-	private void checkKills(Position position, List<boolean[][]> killedPiecesList, List<boolean[][]> killingSpreeList,
-			List<Position[]> finalPosition) {
+	@Override
+	public String toString() {
+		return "O";
+	}
 
-		Position p1 = new Position(position.getRow() + 1, position.getColumn() + 1);
-		Position p2 = new Position(position.getRow() + 2, position.getColumn() + 2);
+	private void checkKills(Position position) {
+
 		for (int i = 1; i < 5; i++) {
+			Position p1 = new Position(position.getRow() + 1, position.getColumn() + 1);
+			Position p2 = new Position(position.getRow() + 2, position.getColumn() + 2);
 			if (i == 2) {
 				p1.setRow(position.getRow() + 1);
 				p1.setColumn(position.getColumn() - 1);
@@ -45,23 +53,21 @@ public class CommonPiece extends GenericCheckersPiece {
 				killedPieces[p1.getRow()][p1.getColumn()] = true;
 				killingSpreeMat[p2.getRow()][p2.getColumn()] = true;
 				finalPositionArray.add(p2);
-				checkKillingSpree(killedPieces, killedPiecesList, p2, killingSpreeMat, killingSpreeList,
-						finalPositionArray, finalPosition);
+				checkKillingSpree(killedPieces, p2, killingSpreeMat, finalPositionArray);
 			}
 		}
 
 	}
 
 	@SuppressWarnings("null")
-	private void checkKillingSpree(boolean[][] killedPieces, List<boolean[][]> killedPiecesList, Position position,
-			boolean[][] killingSpreeMat, List<boolean[][]> killingSpreeList, List<Position> finalPositionArray,
-			List<Position[]> finalPosition) {
-		Position p1 = new Position(position.getRow() + 1, position.getColumn() + 1);
-		Position p2 = new Position(position.getRow() + 2, position.getColumn() + 2);
+	private void checkKillingSpree(boolean[][] killedPieces, Position position, boolean[][] killingSpreeMat,
+			List<Position> finalPositionArray) {
 		boolean[][] preservedkillingSpreeMat = killingSpreeMat;
 		boolean[][] preservedkilledPieces = killedPieces;
 		List<Position> preservedfinalPositionArray = finalPositionArray;
 		for (int i = 1; i < 5; i++) {
+			Position p1 = new Position(position.getRow() + 1, position.getColumn() + 1);
+			Position p2 = new Position(position.getRow() + 2, position.getColumn() + 2);
 			killingSpreeMat = preservedkillingSpreeMat;
 			killedPieces = preservedkilledPieces;
 			finalPositionArray = preservedfinalPositionArray;
@@ -86,11 +92,10 @@ public class CommonPiece extends GenericCheckersPiece {
 				finalPositionArray.add(p2);
 				killedPieces[p1.getRow()][p1.getColumn()] = true;
 				killingSpreeMat[p2.getRow()][p2.getColumn()] = true;
-				checkKillingSpree(killedPieces, killedPiecesList, p2, killingSpreeMat, killingSpreeList,
-						finalPositionArray, finalPosition);
+				checkKillingSpree(killedPieces, p2, killingSpreeMat, finalPositionArray);
 			} else {
 				boolean newKillingSpree = false;
-				if (killingSpreeList != null) {
+				if (killingSpreeList.size() != 0) {
 					for (int j = 0; j < killingSpreeList.size(); j++) {
 						if (killingSpreeList.get(j) != killingSpreeMat)
 							newKillingSpree = true;
@@ -120,21 +125,22 @@ public class CommonPiece extends GenericCheckersPiece {
 	@Override
 	public boolean[][] possibleMoves() {
 		boolean[][] mat = new boolean[getBoard().getRows()][getBoard().getColumns()];
-		List<boolean[][]> killingSpreeList = new ArrayList<>();
-		List<boolean[][]> killedPiecesList = new ArrayList<>();
-		List<Position[]> finalPosition = new ArrayList<>();
+		
+		killingSpreeList = new ArrayList<>();
+		killedPiecesList = new ArrayList<>();
+		finalPosition = new ArrayList<>();
 		killingSpree = false;
 
-		checkKills(position, killedPiecesList, killingSpreeList, finalPosition);
+		checkKills(position);
 
 		if (!killingSpree) {
 			int movePattern;
 			Position p = new Position(0, 0);
 
 			if (getColor() == Color.BLACK)
-				movePattern = -1;
-			else
 				movePattern = 1;
+			else
+				movePattern = -1;
 
 			// north-east
 			p.setValues(position.getRow() + movePattern, position.getColumn() + movePattern);
@@ -150,7 +156,7 @@ public class CommonPiece extends GenericCheckersPiece {
 			int spreeSize;
 			int lastSpreeSize = 0;
 			boolean[][] currentSpree = new boolean[getBoard().getRows()][getBoard().getColumns()];
-			for (int i = 1; i <= killingSpreeList.size(); i++) {
+			for (int i = 0; i < killingSpreeList.size(); i++) {
 				spreeSize = 0;
 				currentSpree = killingSpreeList.get(i);
 				for (int j = 0; j < getBoard().getRows(); j++) {

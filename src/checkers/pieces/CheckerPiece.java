@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import boardGame.Board;
+import boardGame.Color;
 import boardGame.Position;
-import checkers.Color;
 import checkers.GenericCheckersPiece;
 
 public class CheckerPiece extends GenericCheckersPiece {
+
+	private List<boolean[][]> killingSpreeList = new ArrayList<>();
+	private List<boolean[][]> killedPiecesList = new ArrayList<>();
+	private List<Position[]> finalPosition = new ArrayList<>();
 
 	public CheckerPiece(Board board, Color color) {
 		super(board, color);
@@ -19,8 +23,7 @@ public class CheckerPiece extends GenericCheckersPiece {
 		return "C";
 	}
 
-	private void checkKills(Position position, List<boolean[][]> killedPiecesList, List<boolean[][]> killingSpreeList,
-			List<Position[]> finalPosition) {
+	private void checkKills(Position position) {
 
 		int r = 1;
 		int c = 1;
@@ -60,9 +63,9 @@ public class CheckerPiece extends GenericCheckersPiece {
 					killingSpreeMat[p.getRow()][p.getColumn()] = true;
 					killedPieces[enemyPos.getRow()][enemyPos.getColumn()] = true;
 					List<Position> finalPositionArray = new ArrayList<>();
-					finalPositionArray.add(p);
-					checkKillingSpree(killedPieces, killedPiecesList, p, killingSpreeMat, killingSpreeList,
-							finalPositionArray, finalPosition);
+					Position pos = p;
+					finalPositionArray.add(pos);
+					checkKillingSpree(killedPieces, p, killingSpreeMat, finalPositionArray);
 				}
 
 			}
@@ -72,9 +75,8 @@ public class CheckerPiece extends GenericCheckersPiece {
 	}
 
 	@SuppressWarnings("null")
-	private void checkKillingSpree(boolean[][] killedPieces, List<boolean[][]> killedPiecesList, Position position,
-			boolean[][] killingSpreeMat, List<boolean[][]> killingSpreeList, List<Position> finalPositionArray,
-			List<Position[]> finalPosition) {
+	private void checkKillingSpree(boolean[][] killedPieces, Position position, boolean[][] killingSpreeMat,
+			List<Position> finalPositionArray) {
 		boolean[][] preservedkillingSpreeMat = killingSpreeMat;
 		boolean[][] preservedkilledPieces = killedPieces;
 		List<Position> preservedfinalPositionArray = finalPositionArray;
@@ -142,9 +144,9 @@ public class CheckerPiece extends GenericCheckersPiece {
 				if (!getBoard().thereIsAPiece(p) && foundEnemyPiece && !killedPieces[p.getRow()][p.getColumn()]) {
 					killingSpreeMat[p.getRow()][p.getColumn()] = true;
 					killedPieces[enemyPos.getRow()][enemyPos.getColumn()] = true;
-					finalPositionArray.add(p);
-					checkKillingSpree(killedPieces, killedPiecesList, p, killingSpreeMat, killingSpreeList,
-							finalPositionArray, finalPosition);
+					Position pos = p;
+					finalPositionArray.add(pos);
+					checkKillingSpree(killedPieces, p, killingSpreeMat, finalPositionArray);
 				}
 
 			}
@@ -155,12 +157,13 @@ public class CheckerPiece extends GenericCheckersPiece {
 	@Override
 	public boolean[][] possibleMoves() {
 		boolean[][] mat = new boolean[getBoard().getRows()][getBoard().getColumns()];
-		List<boolean[][]> killingSpreeList = new ArrayList<>();
-		List<boolean[][]> killedPiecesList = new ArrayList<>();
-		List<Position[]> finalPosition = new ArrayList<>();
+
+		killingSpreeList = new ArrayList<>();
+		killedPiecesList = new ArrayList<>();
+		finalPosition = new ArrayList<>();
 		killingSpree = false;
 
-		checkKills(position, killedPiecesList, killingSpreeList, finalPosition);
+		checkKills(position);
 
 		if (!killingSpree) {
 			int movePattern;

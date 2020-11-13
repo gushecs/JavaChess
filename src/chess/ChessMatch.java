@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import applications.Language;
 import boardGame.Board;
+import boardGame.Color;
 import boardGame.Piece;
 import boardGame.Position;
 import chess.pieces.Bishop;

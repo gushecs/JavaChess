@@ -5,6 +5,7 @@ import java.util.List;
 
 import applications.Language;
 import boardGame.Board;
+import boardGame.Color;
 import boardGame.Position;
 import checkers.pieces.CommonPiece;
 
@@ -13,12 +14,18 @@ public class CheckersMatch {
 	private Board board;
 	private int turn;
 	private Color currentPlayer;
+	private Color winner;
+	private boolean theresAWinner;
 	private List<Position> initialPositions = new ArrayList<>();
 	private List<Position[]> spreePositions = new ArrayList<>();
 	private List<boolean[][]> killedPieces = new ArrayList<>();
 
 	public int getTurn() {
 		return turn;
+	}
+
+	public boolean checkWinner() {
+		return theresAWinner;
 	}
 
 	public List<Position> getInitialPositions() {
@@ -35,6 +42,10 @@ public class CheckersMatch {
 
 	public Color getCurrentPlayer() {
 		return currentPlayer;
+	}
+
+	public Color getWinner() {
+		return winner;
 	}
 
 	public CheckersMatch() {
@@ -64,13 +75,37 @@ public class CheckersMatch {
 		return board.piece(position).possibleMoves();
 	}
 
+	public void checkVictory() {
+		boolean theresWhite = false;
+		boolean theresBlack = false;
+		for (int i = 0; i < board.getRows(); i++) {
+			for (int j = 0; j < board.getColumns(); j++) {
+				if (board.thereIsAPiece(new Position(i, j))
+						&& ((GenericCheckersPiece) board.piece(i, j)).getColor() == Color.WHITE && !theresWhite)
+					theresWhite = true;
+				else if (board.thereIsAPiece(new Position(i, j))
+						&& ((GenericCheckersPiece) board.piece(i, j)).getColor() == Color.BLACK && !theresBlack)
+					theresBlack = true;
+			}
+		}
+		if (theresWhite && !theresBlack) {
+			winner = Color.WHITE;
+			theresAWinner = true;
+		} else if (!theresWhite && theresBlack) {
+			winner = Color.BLACK;
+			theresAWinner = true;
+		}
+	}
+
 	public boolean checkMandatoryMove() {
 		for (int i = 0; i < board.getRows(); i++) {
 			for (int j = 0; j < board.getColumns(); j++) {
-				board.piece(new Position(i, j)).possibleMoves();
-				if (((GenericCheckersPiece) board.piece(i, j)).getKillingSpree()
-						&& ((GenericCheckersPiece) board.piece(i, j)).getColor() == currentPlayer)
-					return true;
+				if (board.thereIsAPiece(new Position(i, j))) {
+					board.piece(new Position(i, j)).possibleMoves();
+					if (((GenericCheckersPiece) board.piece(i, j)).getKillingSpree()
+							&& ((GenericCheckersPiece) board.piece(i, j)).getColor() == currentPlayer)
+						return true;
+				}
 			}
 		}
 		return false;
@@ -84,27 +119,32 @@ public class CheckersMatch {
 		List<boolean[][]> killedPieces = new ArrayList<>();
 		for (int i = 0; i < board.getRows(); i++) {
 			for (int j = 0; j < board.getColumns(); j++) {
-				GenericCheckersPiece p = (GenericCheckersPiece) board.piece(i, j);
-				if (p.getKillingSpree() && p.getColor() == currentPlayer && p.getSpreeSize() > lastSpreeSize) {
-					possibleMoves = p.possibleMoves();
-					for (int k = 1; k <= p.getSpreePositions().size(); k++) {
-						initialPositions.add(p.getCheckersPosition().toPosition());
-					}
-					spreePositions = p.getSpreePositions();
-					killedPieces = p.getKilledPieces();
-					lastSpreeSize = p.getSpreeSize();
-				} else if (p.getKillingSpree() && p.getColor() == currentPlayer && p.getSpreeSize() == lastSpreeSize) {
-					for (int k = 0; k < board.getRows(); k++) {
-						for (int l = 0; l < board.getColumns(); l++) {
-							if (!possibleMoves[k][l] && p.possibleMoves()[k][l])
-								possibleMoves[k][l] = true;
+				if (board.thereIsAPiece(new Position(i,j))) {
+					GenericCheckersPiece p = (GenericCheckersPiece) board.piece(i, j);
+					boolean[][] possibleMovesTemp=p.possibleMoves();
+					if (p.getKillingSpree() && p.getColor() == currentPlayer && p.getSpreeSize() > lastSpreeSize) {
+						possibleMoves = possibleMovesTemp;
+						initialPositions = new ArrayList<>();
+						for (int k = 0; k < p.getSpreePositions().size(); k++) {
+							initialPositions.add(p.getCheckersPosition().toPosition());
 						}
+						spreePositions = p.getSpreePositions();
+						killedPieces = p.getKilledPieces();
+						lastSpreeSize = p.getSpreeSize();
+					} else if (p.getKillingSpree() && p.getColor() == currentPlayer
+							&& p.getSpreeSize() == lastSpreeSize) {
+						for (int k = 0; k < board.getRows(); k++) {
+							for (int l = 0; l < board.getColumns(); l++) {
+								if (!possibleMoves[k][l] && possibleMovesTemp[k][l])
+									possibleMoves[k][l] = true;
+							}
 
-					}
-					for (int k = 1; k <= p.getSpreePositions().size(); k++) {
-						initialPositions.add(p.getCheckersPosition().toPosition());
-						spreePositions.add(p.getSpreePositions().get(k));
-						killedPieces.add(p.getKilledPieces().get(k));
+						}
+						for (int k = 0; k < p.getSpreePositions().size(); k++) {
+							initialPositions.add(p.getCheckersPosition().toPosition());
+							spreePositions.add(p.getSpreePositions().get(k));
+							killedPieces.add(p.getKilledPieces().get(k));
+						}
 					}
 				}
 
@@ -116,10 +156,14 @@ public class CheckersMatch {
 		return possibleMoves;
 	}
 
-	public void performMandatoryMoves(int moveNumber) {
+	public void performMandatoryMoves(int moveNumber, Language language) {
+		if (moveNumber < 1 || moveNumber > initialPositions.size())
+			throw new CheckersException(language.invalidPlay());
+
+		moveNumber--;
 		Position initialPosition = initialPositions.get(moveNumber);
 		GenericCheckersPiece p = (GenericCheckersPiece) board.removePiece(initialPosition);
-		board.placePiece(p, spreePositions.get(moveNumber)[spreePositions.get(moveNumber).length - 1]);
+		board.placePiece(p, spreePositions.get(moveNumber)[spreePositions.get(moveNumber).length]);
 		boolean[][] killedPieces = this.killedPieces.get(moveNumber);
 		for (int i = 0; i < board.getRows(); i++) {
 			for (int j = 0; j < board.getColumns(); j++) {
@@ -127,6 +171,7 @@ public class CheckersMatch {
 					board.removePiece(new Position(i, j));
 			}
 		}
+		nextTurn();
 	}
 
 	public void performCheckersMove(CheckersPosition sourcePosition, CheckersPosition targetPosition,
@@ -135,8 +180,28 @@ public class CheckersMatch {
 		Position target = targetPosition.toPosition();
 		validateSourcePosition(source, language);
 		validateTargetPosition(source, target, language);
-		GenericCheckersPiece p=(GenericCheckersPiece)board.removePiece(source);
+		GenericCheckersPiece p = (GenericCheckersPiece) board.removePiece(source);
 		board.placePiece(p, target);
+		nextTurn();
+	}
+
+	public void promote() {
+		for (int i = 0; i < 8; i++) {
+			GenericCheckersPiece p = (GenericCheckersPiece) board.piece(0, i);
+			if (p != null && p.getColor() == Color.WHITE) {
+				CheckersPosition pos = p.getCheckersPosition();
+				board.removePiece(pos.toPosition());
+				board.placePiece(p, pos.toPosition());
+			}
+		}
+		for (int i = 0; i < 8; i++) {
+			GenericCheckersPiece p = (GenericCheckersPiece) board.piece(7, i);
+			if (p != null && p.getColor() == Color.BLACK) {
+				CheckersPosition pos = p.getCheckersPosition();
+				board.removePiece(pos.toPosition());
+				board.placePiece(p, pos.toPosition());
+			}
+		}
 	}
 
 	private void validateSourcePosition(Position position, Language language) {
@@ -154,16 +219,16 @@ public class CheckersMatch {
 	}
 
 	private void initialSetup() {
-		for (int j = 0; j <= 7; j++) {
+		for (int j = 1; j <= 8; j++) {
 			for (char i = 'a'; i <= 'h'; i++) {
-				if ((j == 0 || j == 2) && i % 2 != 0)
-					placeNewPiece(i, 2, new CommonPiece(board, Color.BLACK));
-				else if (j == 1 && i % 2 == 0)
-					placeNewPiece(i, 2, new CommonPiece(board, Color.BLACK));
-				else if ((j == 6 || j == 8) && i % 2 == 0)
-					placeNewPiece(i, 2, new CommonPiece(board, Color.WHITE));
-				else if (j == 7 && i % 2 != 0)
-					placeNewPiece(i, 2, new CommonPiece(board, Color.WHITE));
+				if ((j == 6 || j == 8) && i % 2 != 0)
+					placeNewPiece(i, j, new CommonPiece(board, Color.BLACK));
+				else if (j == 7 && i % 2 == 0)
+					placeNewPiece(i, j, new CommonPiece(board, Color.BLACK));
+				else if ((j == 1 || j == 3) && i % 2 == 0)
+					placeNewPiece(i, j, new CommonPiece(board, Color.WHITE));
+				else if (j == 2 && i % 2 != 0)
+					placeNewPiece(i, j, new CommonPiece(board, Color.WHITE));
 			}
 		}
 	}
