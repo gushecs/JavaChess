@@ -47,9 +47,9 @@ public class UI {
 		System.out.print("\033[H\033[2J");
 		System.out.flush();
 	}
-	
-	public static boolean chooseGame(Scanner sc,Language language) {
-		boolean selected=false;
+
+	public static boolean chooseGame(Scanner sc, Language language) {
+		boolean selected = false;
 		while (language.getPortuguese()) {
 			clearScreen();
 			System.out.println();
@@ -58,11 +58,11 @@ public class UI {
 			System.out.println("1-Xadrez");
 			System.out.println("2-Damas");
 			System.out.println();
-			int jogo=sc.nextInt();
+			int jogo = sc.nextInt();
 			sc.nextLine();
-			if (jogo==1)
+			if (jogo == 1)
 				return true;
-			if (jogo==2)
+			if (jogo == 2)
 				return false;
 		}
 		while (!language.getPortuguese()) {
@@ -73,11 +73,11 @@ public class UI {
 			System.out.println("1-Chess");
 			System.out.println("2-Checkers");
 			System.out.println();
-			int jogo=sc.nextInt();
+			int jogo = sc.nextInt();
 			sc.nextLine();
-			if (jogo==1)
+			if (jogo == 1)
 				return true;
-			if (jogo==2)
+			if (jogo == 2)
 				return false;
 		}
 		return selected;
@@ -212,33 +212,37 @@ public class UI {
 			System.out.println();
 			if (!language.getPortuguese()) {
 				System.out.println("Possible Moves:");
-				for (int k = 0; k < checkersMatch.getInitialPositions().size(); k++) {
-					int positions = checkersMatch.getSpreePositions().get(k).length;
+				for (int k = 1; k - 1 < checkersMatch.getInitialPositions().size(); k++) {
+					int positions = checkersMatch.getSpreePositions().get(k - 1).length;
 					System.out.print("play #" + k + ": "
-							+ CheckersPosition.fromPosition(checkersMatch.getInitialPositions().get(k)) + "->");
+							+ CheckersPosition.fromPosition(checkersMatch.getInitialPositions().get(k - 1)) + "->");
 					for (int i = 0; i < positions; i++) {
 						if (i == positions - 1)
 							System.out.println(
-									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k)[i]) + ".");
+									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k - 1)[i])
+											+ ".");
 						else
 							System.out.print(
-									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k)[i]) + "->");
+									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k - 1)[i])
+											+ "->");
 					}
 					System.out.println();
 				}
 			} else {
 				System.out.println("Jogadas possiveis:");
-				for (int k = 1; k-1 < checkersMatch.getInitialPositions().size(); k++) {
-					int positions = checkersMatch.getSpreePositions().get(k-1).length;
+				for (int k = 1; k - 1 < checkersMatch.getInitialPositions().size(); k++) {
+					int positions = checkersMatch.getSpreePositions().get(k - 1).length;
 					System.out.print("Jogada #" + k + ": "
-							+ CheckersPosition.fromPosition(checkersMatch.getInitialPositions().get(k-1)) + "->");
+							+ CheckersPosition.fromPosition(checkersMatch.getInitialPositions().get(k - 1)) + "->");
 					for (int i = 0; i < positions; i++) {
 						if (i == positions - 1)
 							System.out.println(
-									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k-1)[i]) + ".");
+									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k - 1)[i])
+											+ ".");
 						else
 							System.out.print(
-									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k-1)[i]) + "->");
+									CheckersPosition.fromPosition(checkersMatch.getSpreePositions().get(k - 1)[i])
+											+ "->");
 					}
 					System.out.println();
 				}
@@ -280,14 +284,15 @@ public class UI {
 
 	private static void printCheckersPiece(GenericCheckersPiece piece, boolean background, boolean finalPosition,
 			CheckersMatch checkersMatch, Language language) {
-		if (background) {
-			if (finalPosition)
-				System.out.print(ANSI_GREEN_BACKGROUND);
-			else
-				System.out.print(ANSI_BLUE_BACKGROUND);
-		}
+		if (background)
+			System.out.print(ANSI_BLUE_BACKGROUND);
+		
+		if (finalPosition)
+			System.out.print(ANSI_GREEN_BACKGROUND);
+
 		if (piece == null)
 			System.out.print("-" + ANSI_RESET);
+		
 		else {
 			if (piece.getColor() == Color.WHITE) {
 				System.out.print(ANSI_WHITE + language.piecePtEn(piece) + ANSI_RESET);
@@ -295,6 +300,7 @@ public class UI {
 				System.out.print(ANSI_YELLOW + language.piecePtEn(piece) + ANSI_RESET);
 			}
 		}
+		
 		System.out.print(" ");
 	}
 
@@ -310,10 +316,10 @@ public class UI {
 			throw new InputMismatchException(language.readChessPositionError());
 		}
 	}
-	
+
 	public static CheckersPosition readCheckersPosition(Scanner sc, Language language) {
 		try {
-			
+
 			String s = sc.nextLine();
 			char column = s.charAt(0);
 			column = convertUpperLower(column);

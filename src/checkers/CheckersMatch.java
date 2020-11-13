@@ -7,6 +7,7 @@ import applications.Language;
 import boardGame.Board;
 import boardGame.Color;
 import boardGame.Position;
+import checkers.pieces.CheckerPiece;
 import checkers.pieces.CommonPiece;
 
 public class CheckersMatch {
@@ -163,7 +164,7 @@ public class CheckersMatch {
 		moveNumber--;
 		Position initialPosition = initialPositions.get(moveNumber);
 		GenericCheckersPiece p = (GenericCheckersPiece) board.removePiece(initialPosition);
-		board.placePiece(p, spreePositions.get(moveNumber)[spreePositions.get(moveNumber).length]);
+		board.placePiece(p, spreePositions.get(moveNumber)[spreePositions.get(moveNumber).length-1]);
 		boolean[][] killedPieces = this.killedPieces.get(moveNumber);
 		for (int i = 0; i < board.getRows(); i++) {
 			for (int j = 0; j < board.getColumns(); j++) {
@@ -191,7 +192,7 @@ public class CheckersMatch {
 			if (p != null && p.getColor() == Color.WHITE) {
 				CheckersPosition pos = p.getCheckersPosition();
 				board.removePiece(pos.toPosition());
-				board.placePiece(p, pos.toPosition());
+				board.placePiece(new CheckerPiece(board,Color.WHITE), pos.toPosition());
 			}
 		}
 		for (int i = 0; i < 8; i++) {
@@ -199,7 +200,7 @@ public class CheckersMatch {
 			if (p != null && p.getColor() == Color.BLACK) {
 				CheckersPosition pos = p.getCheckersPosition();
 				board.removePiece(pos.toPosition());
-				board.placePiece(p, pos.toPosition());
+				board.placePiece(new CheckerPiece(board,Color.BLACK), pos.toPosition());
 			}
 		}
 	}

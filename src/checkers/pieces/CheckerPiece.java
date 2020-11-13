@@ -44,28 +44,33 @@ public class CheckerPiece extends GenericCheckersPiece {
 			while (!impossibleMove) {
 				p.setValues(p.getRow() + r, p.getColumn() + c);
 
-				if ((!getBoard().thereIsAPiece(p) && foundEnemyPiece)
-						|| (!getBoard().thereIsAPiece(p) && !isThereOpponentPiece(p))
-						|| !getBoard().positionExists(p)) {
+				if (!getBoard().positionExists(p)) {
 					foundEnemyPiece = false;
 					impossibleMove = true;
-				}
+				} else {
 
-				if (isThereOpponentPiece(p) && !foundEnemyPiece) {
-					foundEnemyPiece = true;
-					enemyPos = p;
-				}
+					if ((!getBoard().thereIsAPiece(p) && foundEnemyPiece)
+							|| (!getBoard().thereIsAPiece(p) && !isThereOpponentPiece(p))) {
+						foundEnemyPiece = false;
+						impossibleMove = true;
+					}
 
-				if (!getBoard().thereIsAPiece(p) && foundEnemyPiece) {
-					killingSpree = true;
-					boolean[][] killingSpreeMat = new boolean[getBoard().getRows()][getBoard().getColumns()];
-					boolean[][] killedPieces = new boolean[getBoard().getRows()][getBoard().getColumns()];
-					killingSpreeMat[p.getRow()][p.getColumn()] = true;
-					killedPieces[enemyPos.getRow()][enemyPos.getColumn()] = true;
-					List<Position> finalPositionArray = new ArrayList<>();
-					Position pos = p;
-					finalPositionArray.add(pos);
-					checkKillingSpree(killedPieces, p, killingSpreeMat, finalPositionArray);
+					if (isThereOpponentPiece(p) && !foundEnemyPiece) {
+						foundEnemyPiece = true;
+						enemyPos = p;
+					}
+
+					if (!getBoard().thereIsAPiece(p) && foundEnemyPiece) {
+						killingSpree = true;
+						boolean[][] killingSpreeMat = new boolean[getBoard().getRows()][getBoard().getColumns()];
+						boolean[][] killedPieces = new boolean[getBoard().getRows()][getBoard().getColumns()];
+						killingSpreeMat[p.getRow()][p.getColumn()] = true;
+						killedPieces[enemyPos.getRow()][enemyPos.getColumn()] = true;
+						List<Position> finalPositionArray = new ArrayList<>();
+						Position pos = p;
+						finalPositionArray.add(pos);
+						checkKillingSpree(killedPieces, p, killingSpreeMat, finalPositionArray);
+					}
 				}
 
 			}
@@ -103,33 +108,63 @@ public class CheckerPiece extends GenericCheckersPiece {
 			while (!impossibleMove) {
 				p.setValues(p.getRow() + r, p.getColumn() + c);
 
-				if ((!getBoard().thereIsAPiece(p) && foundEnemyPiece)
-						|| (!getBoard().thereIsAPiece(p) && !isThereOpponentPiece(p))
-						|| !getBoard().positionExists(p)) {
+				if (!getBoard().positionExists(p) || (!getBoard().thereIsAPiece(p) && foundEnemyPiece)
+						|| (!getBoard().thereIsAPiece(p) && !isThereOpponentPiece(p))) {
 
-					boolean newKillingSpree = false;
+					boolean newKillingSpree = true;
 					if (killingSpreeList != null) {
+						boolean[] equals = new boolean[killingSpreeList.size()];
 						for (int j = 0; j < killingSpreeList.size(); j++) {
-							if (killingSpreeList.get(j) != killingSpreeMat)
-								newKillingSpree = true;
+							for (int k = 0; k < getBoard().getRows(); k++) {
+								for (int l = 0; l < getBoard().getColumns(); l++) {
+									if (killingSpreeList.get(j)[k][l] != killingSpreeMat[k][l])
+										equals[j] = true;
+								}
+							}
+							for (int k = 0; k < equals.length; k++) {
+								if (!equals[k])
+									newKillingSpree = false;
+							}
 						}
 						if (newKillingSpree) {
-							killingSpreeList.add(killingSpreeMat);
+							boolean[][] addToListSpree = new boolean[getBoard().getRows()][getBoard().getColumns()];
+							boolean[][] addToListKilled = new boolean[getBoard().getRows()][getBoard().getColumns()];
+							for (int k = 0; k < getBoard().getRows(); k++) {
+								for (int j = 0; j < getBoard().getColumns(); j++) {
+									if (!addToListSpree[k][j] && killingSpreeMat[k][j])
+										addToListSpree[k][j] = true;
+									if (!addToListKilled[k][j] && killedPieces[k][j])
+										addToListKilled[k][j] = true;
+								}
+							}
+							killingSpreeList.add(addToListSpree);
 							Position[] posArray = new Position[finalPositionArray.size()];
 							for (int j = 0; j < finalPositionArray.size(); j++) {
-								posArray[j] = finalPositionArray.get(j);
+								posArray[j] = new Position(finalPositionArray.get(j).getRow(),
+										finalPositionArray.get(j).getColumn());
 							}
 							finalPosition.add(posArray);
-							killedPiecesList.add(killedPieces);
+							killedPiecesList.add(addToListKilled);
 						}
 					} else {
-						killingSpreeList.add(killingSpreeMat);
+						boolean[][] addToListSpree = new boolean[getBoard().getRows()][getBoard().getColumns()];
+						boolean[][] addToListKilled = new boolean[getBoard().getRows()][getBoard().getColumns()];
+						for (int k = 0; k < getBoard().getRows(); k++) {
+							for (int j = 0; j < getBoard().getColumns(); j++) {
+								if (!addToListSpree[k][j] && killingSpreeMat[k][j])
+									addToListSpree[k][j] = true;
+								if (!addToListKilled[k][j] && killedPieces[k][j])
+									addToListKilled[k][j] = true;
+							}
+						}
+						killingSpreeList.add(addToListSpree);
 						Position[] posArray = new Position[finalPositionArray.size()];
 						for (int j = 0; j < finalPositionArray.size(); j++) {
-							posArray[j] = finalPositionArray.get(j);
+							posArray[j] = new Position(finalPositionArray.get(j).getRow(),
+									finalPositionArray.get(j).getColumn());
 						}
 						finalPosition.add(posArray);
-						killedPiecesList.add(killedPieces);
+						killedPiecesList.add(addToListKilled);
 					}
 
 					foundEnemyPiece = false;
